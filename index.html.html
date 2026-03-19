@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>WPP Digital Build Sheet</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --wpp-green: #2e7d32;
+    --wpp-green-light: #4caf50;
+    --wpp-green-bg: #e8f5e9;
+    --wpp-dark: #1b5e20;
+    --gray-50: #fafafa;
+    --gray-100: #f5f5f5;
+    --gray-200: #eeeeee;
+    --gray-300: #e0e0e0;
+    --gray-500: #9e9e9e;
+    --gray-700: #616161;
+    --gray-900: #212121;
+    --red-500: #ef5350;
+    --red-bg: #ffebee;
+    --blue-500: #1976d2;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--gray-100);
+    color: var(--gray-900);
+    min-height: 100vh;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, var(--wpp-dark), var(--wpp-green));
+    color: white;
+    padding: 16px 20px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-md);
+  }
+  .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+  .header .subtitle { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+
+  /* ── Tab Navigation ── */
+  .tabs {
+    display: flex;
+    background: white;
+    border-bottom: 1px solid var(--gray-300);
+    position: sticky;
+    top: 62px;
+    z-index: 99;
+  }
+  .tab {
+    flex: 1;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-500);
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    color: var(--wpp-green);
+    border-bottom-color: var(--wpp-green);
+  }
+
+  /* ── Content Area ── */
+  .content { padding: 16px; max-width: 600px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── Form Styles ── */
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 14px 12px;
+    font-size: 16px;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius);
+    background: white;
+    color: var(--gray-900);
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .form-group select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23616161' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--wpp-green);
+    box-shadow: 0 0 0 3px rgba(46,125,50,0.15);
+  }
+  .form-group input::placeholder { color: var(--gray-500); }
+
+  /* ── Quantity Stepper ── */
+  .qty-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .qty-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid var(--wpp-green);
+    background: white;
+    color: var(--wpp-green);
+    font-size: 22px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .qty-btn:active {
+    background: var(--wpp-green);
+    color: white;
+    transform: scale(0.95);
+  }
+  .qty-row input {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* ── Associate Quick Select ── */
+  .associate-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .associate-chip {
+    padding: 10px 16px;
+    border-radius: 24px;
+    border: 2px solid var(--gray-300);
+    background: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--gray-700);
+  }
+  .associate-chip.selected {
+    border-color: var(--wpp-green);
+    background: var(--wpp-green-bg);
+    color: var(--wpp-dark);
+  }
+  .associate-chip:active { transform: scale(0.97); }
+
+  /* ── Buttons ── */
+  .btn-submit {
+    width: 100%;
+    padding: 16px;
+    font-size: 17px;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, var(--wpp-green), var(--wpp-dark));
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-md);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .btn-submit:active { transform: scale(0.98); opacity: 0.9; }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-secondary {
+    width: 100%;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--wpp-green);
+    background: white;
+    border: 2px solid var(--wpp-green);
+    border-radius: var(--radius);
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s;
+  }
+  .btn-secondary:active { background: var(--wpp-green-bg); }
+
+  .btn-danger {
+    width: 100%;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--red-500);
+    background: white;
+    border: 2px solid var(--red-500);
+    border-radius: var(--radius);
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  /* ── Success Toast ── */
+  .toast {
+    position: fixed;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--wpp-dark);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    transition: bottom 0.35s ease;
+    z-index: 200;
+    white-space: nowrap;
+  }
+  .toast.show { bottom: 30px; }
+
+  /* ── History Cards ── */
+  .history-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--wpp-green);
+  }
+  .history-card .hc-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .history-card .hc-dept {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: white;
+    background: var(--wpp-green);
+    padding: 3px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+  }
+  .history-card .hc-date {
+    font-size: 12px;
+    color: var(--gray-500);
+  }
+  .history-card .hc-body {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--gray-700);
+  }
+  .history-card .hc-body strong { color: var(--gray-900); }
+  .history-card .hc-qty {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--wpp-green);
+    float: right;
+    margin-left: 12px;
+  }
+  .history-card .hc-associate {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-top: 4px;
+  }
+  .history-card .hc-delete {
+    font-size: 12px;
+    color: var(--red-500);
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 4px 0;
+    margin-top: 4px;
+    font-weight: 600;
+  }
+
+  /* ── Empty State ── */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--gray-500);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 15px; }
+
+  /* ── Stats Bar ── */
+  .stats-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    flex: 1;
+    background: white;
+    border-radius: var(--radius);
+    padding: 12px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+  .stat-card .stat-num {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--wpp-green);
+  }
+  .stat-card .stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+
+  /* ── Filter Row ── */
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .filter-row select {
+    flex: 1;
+    padding: 10px;
+    font-size: 13px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    background: white;
+    color: var(--gray-700);
+  }
+
+  /* ── Settings ── */
+  .settings-section {
+    background: white;
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .settings-section h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--wpp-green-bg);
+    color: var(--wpp-dark);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .tag .remove-tag {
+    cursor: pointer;
+    font-weight: 800;
+    opacity: 0.6;
+    font-size: 15px;
+  }
+  .tag .remove-tag:hover { opacity: 1; }
+  .add-row {
+    display: flex;
+    gap: 8px;
+  }
+  .add-row input {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius);
+  }
+  .add-row button {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    background: var(--wpp-green);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  /* ── Responsive ── */
+  @media (min-width: 768px) {
+    .header h1 { font-size: 24px; }
+    .content { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>WPP Build Sheet</h1>
+  <div class="subtitle">Woodland Power Products &mdash; Digital Production Log</div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('form')">New Entry</button>
+  <button class="tab" onclick="switchTab('history')">History</button>
+  <button class="tab" onclick="switchTab('settings')">Settings</button>
+</div>
+
+<div class="content">
+
+  <!-- ════════ NEW ENTRY TAB ════════ -->
+  <div id="panel-form" class="panel active">
+
+    <label style="font-size:13px;font-weight:600;color:var(--gray-700);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:block;">Associate</label>
+    <div class="associate-chips" id="associate-chips"></div>
+
+    <div class="form-group">
+      <label for="department">Department</label>
+      <select id="department">
+        <option value="">Select department...</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="entry-date">Date</label>
+      <input type="date" id="entry-date">
+    </div>
+
+    <div class="form-group">
+      <label for="part-number">Part Number</label>
+      <input type="text" id="part-number" placeholder="Enter part number" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description</label>
+      <input type="text" id="description" placeholder="What was built?" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+      <label>Quantity</label>
+      <div class="qty-row">
+        <button class="qty-btn" onclick="adjustQty(-1)">-</button>
+        <input type="number" id="quantity" value="1" min="1" inputmode="numeric">
+        <button class="qty-btn" onclick="adjustQty(1)">+</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="location">Location Stored</label>
+      <input type="text" id="location" placeholder="Where is it stored?" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+      <label for="notes">Notes (optional)</label>
+      <textarea id="notes" rows="2" placeholder="Any issues, delays, or comments..." style="font-family:inherit;resize:vertical;"></textarea>
+    </div>
+
+    <button class="btn-submit" id="btn-submit" onclick="submitEntry()">Submit Entry</button>
+
+    <div style="text-align:center;margin-top:8px;">
+      <button style="background:none;border:none;color:var(--wpp-green);font-size:14px;font-weight:600;cursor:pointer;padding:8px;" onclick="clearForm()">Clear Form</button>
+    </div>
+  </div>
+
+  <!-- ════════ HISTORY TAB ════════ -->
+  <div id="panel-history" class="panel">
+    <div class="stats-bar" id="stats-bar"></div>
+
+    <div class="filter-row">
+      <select id="filter-dept" onchange="renderHistory()">
+        <option value="">All Departments</option>
+      </select>
+      <select id="filter-associate" onchange="renderHistory()">
+        <option value="">All Associates</option>
+      </select>
+      <input type="date" id="filter-date" onchange="renderHistory()" style="flex:1;padding:10px;font-size:13px;border:1px solid var(--gray-300);border-radius:var(--radius);">
+    </div>
+
+    <div id="history-list"></div>
+
+    <button class="btn-secondary" onclick="exportToExcel()" style="margin-top:16px;">Export to Excel (.xlsx)</button>
+    <button class="btn-secondary" onclick="exportTodayToExcel()" style="margin-top:6px;">Export Today Only</button>
+  </div>
+
+  <!-- ════════ SETTINGS TAB ════════ -->
+  <div id="panel-settings" class="panel">
+
+    <div class="settings-section">
+      <h3>Departments</h3>
+      <div class="tag-list" id="dept-tags"></div>
+      <div class="add-row">
+        <input type="text" id="new-dept" placeholder="Add department...">
+        <button onclick="addDepartment()">Add</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Associates</h3>
+      <div class="tag-list" id="assoc-tags"></div>
+      <div class="add-row">
+        <input type="text" id="new-assoc" placeholder="Add associate name...">
+        <button onclick="addAssociate()">Add</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Common Locations</h3>
+      <div class="tag-list" id="loc-tags"></div>
+      <div class="add-row">
+        <input type="text" id="new-loc" placeholder="Add location...">
+        <button onclick="addLocation()">Add</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Data Management</h3>
+      <p style="font-size:13px;color:var(--gray-700);margin-bottom:12px;">
+        Export all build sheet data, or clear the log. Data is stored in this browser &mdash; export regularly to keep a backup in OneDrive.
+      </p>
+      <button class="btn-secondary" onclick="exportToExcel()">Export All Data to Excel</button>
+      <button class="btn-danger" onclick="confirmClearAll()">Clear All Entries</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// CONFIGURATION — Edit these lists anytime
+// ══════════════════════════════════════════
+const DEFAULT_DEPARTMENTS = ['MDA', 'Box 1', 'Engine Line', 'Aftermarket', 'Mailroom'];
+const DEFAULT_ASSOCIATES = ['Hector Burgos', 'Jose Ocasio', 'Pedro Ramos', 'Jesus Carrasquillo'];
+const DEFAULT_LOCATIONS = [];
+
+// Google Sheets sync URL (Apps Script Web App)
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxdKw3SFT1pcmr0ZtnOpAlY60Xpz7rnPWj3TkSKOje1r4im50aaNdyFFAmP3CsV1ijL/exec';
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let entries = JSON.parse(localStorage.getItem('wpp_entries') || '[]');
+let departments = JSON.parse(localStorage.getItem('wpp_departments') || 'null') || [...DEFAULT_DEPARTMENTS];
+let associates = JSON.parse(localStorage.getItem('wpp_associates') || 'null') || [...DEFAULT_ASSOCIATES];
+let locations = JSON.parse(localStorage.getItem('wpp_locations') || 'null') || [...DEFAULT_LOCATIONS];
+let selectedAssociate = localStorage.getItem('wpp_selected_associate') || '';
+
+function saveState() {
+  localStorage.setItem('wpp_entries', JSON.stringify(entries));
+  localStorage.setItem('wpp_departments', JSON.stringify(departments));
+  localStorage.setItem('wpp_associates', JSON.stringify(associates));
+  localStorage.setItem('wpp_locations', JSON.stringify(locations));
+  localStorage.setItem('wpp_selected_associate', selectedAssociate);
+}
+
+// ══════════════════════════════════════════
+// TAB NAVIGATION
+// ══════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['form','history','settings'][i] === tab);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'history') renderHistory();
+  if (tab === 'settings') renderSettings();
+}
+
+// ══════════════════════════════════════════
+// FORM
+// ══════════════════════════════════════════
+function initForm() {
+  // Set today's date
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('entry-date').value = today;
+
+  // Populate department dropdown
+  renderDeptDropdown();
+
+  // Render associate chips
+  renderAssociateChips();
+}
+
+function renderDeptDropdown() {
+  const sel = document.getElementById('department');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Select department...</option>';
+  departments.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d;
+    opt.textContent = d;
+    sel.appendChild(opt);
+  });
+  if (current && departments.includes(current)) sel.value = current;
+}
+
+function renderAssociateChips() {
+  const container = document.getElementById('associate-chips');
+  container.innerHTML = '';
+  associates.forEach(name => {
+    const chip = document.createElement('div');
+    chip.className = 'associate-chip' + (selectedAssociate === name ? ' selected' : '');
+    chip.textContent = name.split(' ')[0]; // First name only on chip
+    chip.title = name;
+    chip.onclick = () => {
+      selectedAssociate = selectedAssociate === name ? '' : name;
+      saveState();
+      renderAssociateChips();
+    };
+    container.appendChild(chip);
+  });
+}
+
+function adjustQty(delta) {
+  const input = document.getElementById('quantity');
+  const newVal = Math.max(1, parseInt(input.value || '1') + delta);
+  input.value = newVal;
+}
+
+function submitEntry() {
+  const dept = document.getElementById('department').value;
+  const date = document.getElementById('entry-date').value;
+  const partNum = document.getElementById('part-number').value.trim();
+  const desc = document.getElementById('description').value.trim();
+  const qty = parseInt(document.getElementById('quantity').value) || 0;
+  const loc = document.getElementById('location').value.trim();
+  const notes = document.getElementById('notes').value.trim();
+
+  // Validation
+  if (!selectedAssociate) { showToast('Please select an associate'); return; }
+  if (!dept) { showToast('Please select a department'); return; }
+  if (!date) { showToast('Please enter a date'); return; }
+  if (!partNum) { showToast('Please enter a part number'); return; }
+  if (!desc) { showToast('Please enter a description'); return; }
+  if (qty < 1) { showToast('Quantity must be at least 1'); return; }
+  if (!loc) { showToast('Please enter a location'); return; }
+
+  const entry = {
+    id: Date.now().toString(36) + Math.random().toString(36).substr(2,4),
+    associate: selectedAssociate,
+    department: dept,
+    date: date,
+    partNumber: partNum,
+    description: desc,
+    quantity: qty,
+    location: loc,
+    notes: notes,
+    timestamp: new Date().toISOString()
+  };
+
+  // Save locally
+  entries.unshift(entry);
+  saveState();
+
+  // Sync to Google Sheets (fire-and-forget, doesn't block the UI)
+  if (SHEETS_URL) {
+    fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        Date: entry.date,
+        Associate: entry.associate,
+        Department: entry.department,
+        PartNumber: entry.partNumber,
+        Description: entry.description,
+        Quantity: entry.quantity,
+        LocationStored: entry.location,
+        Notes: entry.notes || '',
+        SubmittedAt: new Date(entry.timestamp).toLocaleString()
+      })
+    }).catch(function() {});
+  }
+
+  // Reset form fields (keep associate, dept, date)
+  document.getElementById('part-number').value = '';
+  document.getElementById('description').value = '';
+  document.getElementById('quantity').value = '1';
+  document.getElementById('location').value = '';
+  document.getElementById('notes').value = '';
+
+  showToast('Entry saved — ' + qty + 'x ' + desc);
+}
+
+function clearForm() {
+  document.getElementById('part-number').value = '';
+  document.getElementById('description').value = '';
+  document.getElementById('quantity').value = '1';
+  document.getElementById('location').value = '';
+  document.getElementById('notes').value = '';
+}
+
+// ══════════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════════
+function renderHistory() {
+  const filterDept = document.getElementById('filter-dept').value;
+  const filterAssoc = document.getElementById('filter-associate').value;
+  const filterDate = document.getElementById('filter-date').value;
+
+  // Populate filter dropdowns
+  const deptSel = document.getElementById('filter-dept');
+  const currentDeptFilter = deptSel.value;
+  deptSel.innerHTML = '<option value="">All Departments</option>';
+  departments.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    deptSel.appendChild(opt);
+  });
+  deptSel.value = currentDeptFilter;
+
+  const assocSel = document.getElementById('filter-associate');
+  const currentAssocFilter = assocSel.value;
+  assocSel.innerHTML = '<option value="">All Associates</option>';
+  associates.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a; opt.textContent = a;
+    assocSel.appendChild(opt);
+  });
+  assocSel.value = currentAssocFilter;
+
+  // Filter entries
+  let filtered = entries.filter(e => {
+    if (filterDept && e.department !== filterDept) return false;
+    if (filterAssoc && e.associate !== filterAssoc) return false;
+    if (filterDate && e.date !== filterDate) return false;
+    return true;
+  });
+
+  // Stats
+  const today = new Date().toISOString().split('T')[0];
+  const todayEntries = entries.filter(e => e.date === today);
+  const todayQty = todayEntries.reduce((s,e) => s + e.quantity, 0);
+  const filteredQty = filtered.reduce((s,e) => s + e.quantity, 0);
+
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-num">${todayQty}</div>
+      <div class="stat-label">Built Today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">${todayEntries.length}</div>
+      <div class="stat-label">Entries Today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">${entries.length}</div>
+      <div class="stat-label">Total Entries</div>
+    </div>
+  `;
+
+  // Render cards
+  const list = document.getElementById('history-list');
+  if (filtered.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">&#128203;</div>
+        <p>No entries yet. Submit your first build!</p>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.slice(0, 50).map(e => `
+    <div class="history-card">
+      <div class="hc-top">
+        <span class="hc-dept">${e.department}</span>
+        <span class="hc-date">${formatDate(e.date)}</span>
+      </div>
+      <div class="hc-body">
+        <span class="hc-qty">${e.quantity}</span>
+        <strong>${e.partNumber}</strong> &mdash; ${e.description}<br>
+        <span style="color:var(--gray-500);">Location: ${e.location}</span>
+        ${e.notes ? '<br><em style="font-size:12px;color:var(--gray-500);">' + e.notes + '</em>' : ''}
+      </div>
+      <div class="hc-associate">${e.associate} &bull; ${formatTime(e.timestamp)}</div>
+      <button class="hc-delete" onclick="deleteEntry('${e.id}')">Delete</button>
+    </div>
+  `).join('');
+}
+
+function deleteEntry(id) {
+  if (!confirm('Delete this entry?')) return;
+  entries = entries.filter(e => e.id !== id);
+  saveState();
+  renderHistory();
+  showToast('Entry deleted');
+}
+
+function confirmClearAll() {
+  if (!confirm('This will permanently delete ALL build sheet entries. Are you sure?')) return;
+  if (!confirm('Really delete everything? This cannot be undone.')) return;
+  entries = [];
+  saveState();
+  renderHistory();
+  showToast('All entries cleared');
+}
+
+// ══════════════════════════════════════════
+// EXCEL EXPORT
+// ══════════════════════════════════════════
+function exportToExcel() {
+  if (entries.length === 0) { showToast('No entries to export'); return; }
+  buildAndDownloadXLSX(entries, 'WPP_Build_Sheet_All');
+}
+
+function exportTodayToExcel() {
+  const today = new Date().toISOString().split('T')[0];
+  const todayEntries = entries.filter(e => e.date === today);
+  if (todayEntries.length === 0) { showToast('No entries for today'); return; }
+  buildAndDownloadXLSX(todayEntries, 'WPP_Build_Sheet_' + today);
+}
+
+function buildAndDownloadXLSX(data, filename) {
+  const rows = data.map(e => ({
+    'Date': e.date,
+    'Associate': e.associate,
+    'Department': e.department,
+    'Part Number': e.partNumber,
+    'Description': e.description,
+    'Quantity': e.quantity,
+    'Location Stored': e.location,
+    'Notes': e.notes || '',
+    'Submitted At': new Date(e.timestamp).toLocaleString()
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  // Column widths
+  ws['!cols'] = [
+    {wch: 12}, // Date
+    {wch: 20}, // Associate
+    {wch: 14}, // Department
+    {wch: 16}, // Part Number
+    {wch: 30}, // Description
+    {wch: 10}, // Quantity
+    {wch: 18}, // Location
+    {wch: 30}, // Notes
+    {wch: 20}, // Submitted At
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Build Sheet');
+  XLSX.writeFile(wb, filename + '.xlsx');
+  showToast('Excel file downloaded');
+}
+
+// ══════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════
+function renderSettings() {
+  renderTags('dept-tags', departments, removeDepartment);
+  renderTags('assoc-tags', associates, removeAssociate);
+  renderTags('loc-tags', locations, removeLocation);
+}
+
+function renderTags(containerId, items, removeFn) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = items.map((item, i) =>
+    `<span class="tag">${item}<span class="remove-tag" onclick="event.stopPropagation();(${removeFn.name})(${i})">&times;</span></span>`
+  ).join('');
+}
+
+function addDepartment() {
+  const input = document.getElementById('new-dept');
+  const val = input.value.trim();
+  if (!val || departments.includes(val)) { input.value = ''; return; }
+  departments.push(val);
+  input.value = '';
+  saveState();
+  renderSettings();
+  renderDeptDropdown();
+}
+
+function removeDepartment(i) {
+  departments.splice(i, 1);
+  saveState();
+  renderSettings();
+  renderDeptDropdown();
+}
+
+function addAssociate() {
+  const input = document.getElementById('new-assoc');
+  const val = input.value.trim();
+  if (!val || associates.includes(val)) { input.value = ''; return; }
+  associates.push(val);
+  input.value = '';
+  saveState();
+  renderSettings();
+  renderAssociateChips();
+}
+
+function removeAssociate(i) {
+  associates.splice(i, 1);
+  saveState();
+  renderSettings();
+  renderAssociateChips();
+}
+
+function addLocation() {
+  const input = document.getElementById('new-loc');
+  const val = input.value.trim();
+  if (!val || locations.includes(val)) { input.value = ''; return; }
+  locations.push(val);
+  input.value = '';
+  saveState();
+  renderSettings();
+}
+
+function removeLocation(i) {
+  locations.splice(i, 1);
+  saveState();
+  renderSettings();
+}
+
+// ══════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatTime(isoStr) {
+  return new Date(isoStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+initForm();
+</script>
+</body>
+</html>
