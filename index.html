@@ -1,976 +1,1289 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>WPP Digital Build Sheet</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<style>
-  :root {
-    --wpp-green: #2e7d32;
-    --wpp-green-light: #4caf50;
-    --wpp-green-bg: #e8f5e9;
-    --wpp-dark: #1b5e20;
-    --gray-50: #fafafa;
-    --gray-100: #f5f5f5;
-    --gray-200: #eeeeee;
-    --gray-300: #e0e0e0;
-    --gray-500: #9e9e9e;
-    --gray-700: #616161;
-    --gray-900: #212121;
-    --red-500: #ef5350;
-    --red-bg: #ffebee;
-    --blue-500: #1976d2;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
-    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-    --radius: 10px;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WPP Digital Build Sheet</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            padding-bottom: 80px;
+        }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--gray-100);
-    color: var(--gray-900);
-    min-height: 100vh;
-    -webkit-text-size-adjust: 100%;
-  }
+        /* HEADER */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
 
-  /* ── Header ── */
-  .header {
-    background: linear-gradient(135deg, var(--wpp-dark), var(--wpp-green));
-    color: white;
-    padding: 16px 20px;
-    text-align: center;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: var(--shadow-md);
-  }
-  .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
-  .header .subtitle { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+        header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
 
-  /* ── Tab Navigation ── */
-  .tabs {
-    display: flex;
-    background: white;
-    border-bottom: 1px solid var(--gray-300);
-    position: sticky;
-    top: 62px;
-    z-index: 99;
-  }
-  .tab {
-    flex: 1;
-    padding: 12px 8px;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--gray-500);
-    background: none;
-    border: none;
-    border-bottom: 3px solid transparent;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .tab.active {
-    color: var(--wpp-green);
-    border-bottom-color: var(--wpp-green);
-  }
+        header p {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
 
-  /* ── Content Area ── */
-  .content { padding: 16px; max-width: 600px; margin: 0 auto; }
-  .panel { display: none; }
-  .panel.active { display: block; }
+        /* TABS */
+        .tabs-container {
+            position: sticky;
+            top: 70px;
+            z-index: 99;
+            display: flex;
+            background: white;
+            border-bottom: 2px solid #e0e0e0;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        }
 
-  /* ── Form Styles ── */
-  .form-group { margin-bottom: 16px; }
-  .form-group label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--gray-700);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 14px 12px;
-    font-size: 16px;
-    border: 2px solid var(--gray-300);
-    border-radius: var(--radius);
-    background: white;
-    color: var(--gray-900);
-    transition: border-color 0.2s;
-    -webkit-appearance: none;
-    appearance: none;
-  }
-  .form-group select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23616161' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    padding-right: 36px;
-  }
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: var(--wpp-green);
-    box-shadow: 0 0 0 3px rgba(46,125,50,0.15);
-  }
-  .form-group input::placeholder { color: var(--gray-500); }
+        .tab-button {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s ease;
+        }
 
-  /* ── Quantity Stepper ── */
-  .qty-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .qty-btn {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: 2px solid var(--wpp-green);
-    background: white;
-    color: var(--wpp-green);
-    font-size: 22px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s;
-    flex-shrink: 0;
-  }
-  .qty-btn:active {
-    background: var(--wpp-green);
-    color: white;
-    transform: scale(0.95);
-  }
-  .qty-row input {
-    text-align: center;
-    font-size: 22px;
-    font-weight: 700;
-    flex: 1;
-    min-width: 0;
-  }
+        .tab-button.active {
+            color: #1b5e20;
+        }
 
-  /* ── Associate Quick Select ── */
-  .associate-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-  .associate-chip {
-    padding: 10px 16px;
-    border-radius: 24px;
-    border: 2px solid var(--gray-300);
-    background: white;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-    color: var(--gray-700);
-  }
-  .associate-chip.selected {
-    border-color: var(--wpp-green);
-    background: var(--wpp-green-bg);
-    color: var(--wpp-dark);
-  }
-  .associate-chip:active { transform: scale(0.97); }
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #1b5e20;
+        }
 
-  /* ── Buttons ── */
-  .btn-submit {
-    width: 100%;
-    padding: 16px;
-    font-size: 17px;
-    font-weight: 700;
-    color: white;
-    background: linear-gradient(135deg, var(--wpp-green), var(--wpp-dark));
-    border: none;
-    border-radius: var(--radius);
-    cursor: pointer;
-    margin-top: 8px;
-    transition: all 0.2s;
-    box-shadow: var(--shadow-md);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  .btn-submit:active { transform: scale(0.98); opacity: 0.9; }
-  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* TAB CONTENT */
+        .tab-content {
+            display: none;
+            padding: 20px;
+            min-height: calc(100vh - 180px);
+        }
 
-  .btn-secondary {
-    width: 100%;
-    padding: 14px;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--wpp-green);
-    background: white;
-    border: 2px solid var(--wpp-green);
-    border-radius: var(--radius);
-    cursor: pointer;
-    margin-top: 10px;
-    transition: all 0.2s;
-  }
-  .btn-secondary:active { background: var(--wpp-green-bg); }
+        .tab-content.active {
+            display: block;
+        }
 
-  .btn-danger {
-    width: 100%;
-    padding: 14px;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--red-500);
-    background: white;
-    border: 2px solid var(--red-500);
-    border-radius: var(--radius);
-    cursor: pointer;
-    margin-top: 10px;
-  }
+        /* FORM STYLES */
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-  /* ── Success Toast ── */
-  .toast {
-    position: fixed;
-    bottom: -80px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--wpp-dark);
-    color: white;
-    padding: 14px 28px;
-    border-radius: 30px;
-    font-size: 15px;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-    transition: bottom 0.35s ease;
-    z-index: 200;
-    white-space: nowrap;
-  }
-  .toast.show { bottom: 30px; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
 
-  /* ── History Cards ── */
-  .history-card {
-    background: white;
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    margin-bottom: 10px;
-    box-shadow: var(--shadow-sm);
-    border-left: 4px solid var(--wpp-green);
-  }
-  .history-card .hc-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  .history-card .hc-dept {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: white;
-    background: var(--wpp-green);
-    padding: 3px 10px;
-    border-radius: 12px;
-    letter-spacing: 0.5px;
-  }
-  .history-card .hc-date {
-    font-size: 12px;
-    color: var(--gray-500);
-  }
-  .history-card .hc-body {
-    font-size: 14px;
-    line-height: 1.5;
-    color: var(--gray-700);
-  }
-  .history-card .hc-body strong { color: var(--gray-900); }
-  .history-card .hc-qty {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--wpp-green);
-    float: right;
-    margin-left: 12px;
-  }
-  .history-card .hc-associate {
-    font-size: 12px;
-    color: var(--gray-500);
-    margin-top: 4px;
-  }
-  .history-card .hc-delete {
-    font-size: 12px;
-    color: var(--red-500);
-    cursor: pointer;
-    border: none;
-    background: none;
-    padding: 4px 0;
-    margin-top: 4px;
-    font-weight: 600;
-  }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: white;
+        }
 
-  /* ── Empty State ── */
-  .empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--gray-500);
-  }
-  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
-  .empty-state p { font-size: 15px; }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
 
-  /* ── Stats Bar ── */
-  .stats-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-  .stat-card {
-    flex: 1;
-    background: white;
-    border-radius: var(--radius);
-    padding: 12px;
-    text-align: center;
-    box-shadow: var(--shadow-sm);
-  }
-  .stat-card .stat-num {
-    font-size: 24px;
-    font-weight: 800;
-    color: var(--wpp-green);
-  }
-  .stat-card .stat-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    color: var(--gray-500);
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    margin-top: 2px;
-  }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1b5e20;
+            box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.1);
+        }
 
-  /* ── Filter Row ── */
-  .filter-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .filter-row select {
-    flex: 1;
-    padding: 10px;
-    font-size: 13px;
-    border: 1px solid var(--gray-300);
-    border-radius: var(--radius);
-    background: white;
-    color: var(--gray-700);
-  }
+        .form-group input[readonly],
+        .form-group input[disabled] {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            font-weight: 600;
+            cursor: not-allowed;
+        }
 
-  /* ── Settings ── */
-  .settings-section {
-    background: white;
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 16px;
-    box-shadow: var(--shadow-sm);
-  }
-  .settings-section h3 {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--gray-900);
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .tag-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 10px;
-  }
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    background: var(--wpp-green-bg);
-    color: var(--wpp-dark);
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-  }
-  .tag .remove-tag {
-    cursor: pointer;
-    font-weight: 800;
-    opacity: 0.6;
-    font-size: 15px;
-  }
-  .tag .remove-tag:hover { opacity: 1; }
-  .add-row {
-    display: flex;
-    gap: 8px;
-  }
-  .add-row input {
-    flex: 1;
-    padding: 10px 12px;
-    font-size: 14px;
-    border: 2px solid var(--gray-300);
-    border-radius: var(--radius);
-  }
-  .add-row button {
-    padding: 10px 20px;
-    font-size: 14px;
-    font-weight: 700;
-    color: white;
-    background: var(--wpp-green);
-    border: none;
-    border-radius: var(--radius);
-    cursor: pointer;
-  }
+        /* CHIPS (ASSOCIATES) */
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
 
-  /* ── Responsive ── */
-  @media (min-width: 768px) {
-    .header h1 { font-size: 24px; }
-    .content { padding: 24px; }
-  }
-</style>
+        .chip {
+            padding: 12px 20px;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .chip:active {
+            transform: scale(0.98);
+        }
+
+        .chip.selected {
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            color: white;
+            border-color: #1b5e20;
+        }
+
+        /* SELECT DROPDOWN FIX */
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper select {
+            padding-right: 40px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M0 4l6 4 6-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 12px;
+        }
+
+        /* SEARCH DROPDOWN */
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-input {
+            position: relative !important;
+        }
+
+        .search-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 50;
+            display: none;
+            margin-top: 0;
+        }
+
+        .search-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:active {
+            background: #f5f5f5;
+        }
+
+        .dropdown-item strong {
+            display: block;
+            font-size: 16px;
+            color: #1b5e20;
+            margin-bottom: 2px;
+        }
+
+        .dropdown-item span {
+            display: block;
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* QUANTITY STEPPER */
+        .quantity-stepper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .quantity-btn {
+            width: 56px;
+            height: 56px;
+            border: 2px solid #1b5e20;
+            background: white;
+            color: #1b5e20;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .quantity-btn:active {
+            background: #1b5e20;
+            color: white;
+            transform: scale(0.95);
+        }
+
+        .quantity-display {
+            flex: 1;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 6px;
+        }
+
+        /* SUBMIT BUTTON */
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(27, 94, 32, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 6px rgba(27, 94, 32, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2e7d32;
+            color: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 200;
+            animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+        }
+
+        /* HISTORY VIEW */
+        .history-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .history-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 8px;
+        }
+
+        .history-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1b5e20;
+        }
+
+        .history-card-time {
+            font-size: 12px;
+            color: #999;
+            white-space: nowrap;
+        }
+
+        .history-card-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .history-card-row:last-child {
+            border-bottom: none;
+        }
+
+        .history-card-label {
+            color: #999;
+            font-weight: 500;
+        }
+
+        .history-card-value {
+            color: #333;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        /* STATS BAR */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(27, 94, 32, 0.2);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        /* SETTINGS */
+        .settings-section {
+            margin-bottom: 28px;
+        }
+
+        .settings-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #1b5e20;
+        }
+
+        .tag-input {
+            margin-bottom: 12px;
+        }
+
+        .tag-input input {
+            margin-bottom: 8px;
+        }
+
+        .tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag-item {
+            background: #e8f5e9;
+            color: #1b5e20;
+            padding: 8px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0.7;
+        }
+
+        .tag-remove:active {
+            opacity: 1;
+        }
+
+        /* EXPORT BUTTONS */
+        .export-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .export-btn {
+            padding: 14px;
+            background: #f0f0f0;
+            border: 2px solid #1b5e20;
+            color: #1b5e20;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:active {
+            background: #1b5e20;
+            color: white;
+            transform: scale(0.98);
+        }
+
+        /* DANGER ZONE */
+        .danger-zone {
+            margin-top: 28px;
+            padding: 16px;
+            background: #ffebee;
+            border: 2px solid #f44336;
+            border-radius: 6px;
+        }
+
+        .danger-zone h4 {
+            color: #c62828;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .danger-btn {
+            width: 100%;
+            padding: 14px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .danger-btn:active {
+            opacity: 0.9;
+            transform: scale(0.98);
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state span {
+            font-size: 14px;
+            display: block;
+        }
+
+        /* SMALL CLEAR ICON */
+        .search-clear {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+            padding: 4px 8px;
+            z-index: 10;
+        }
+
+        .search-clear:active {
+            color: #333;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 20px;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .export-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
+    <header>
+        <h1>WPP Digital Build Sheet</h1>
+        <p>Manufacturing Daily Log</p>
+    </header>
 
-<div class="header">
-  <h1>WPP Build Sheet</h1>
-  <div class="subtitle">Woodland Power Products &mdash; Digital Production Log</div>
-</div>
-
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('form')">New Entry</button>
-  <button class="tab" onclick="switchTab('history')">History</button>
-  <button class="tab" onclick="switchTab('settings')">Settings</button>
-</div>
-
-<div class="content">
-
-  <!-- ════════ NEW ENTRY TAB ════════ -->
-  <div id="panel-form" class="panel active">
-
-    <label style="font-size:13px;font-weight:600;color:var(--gray-700);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:block;">Associate</label>
-    <div class="associate-chips" id="associate-chips"></div>
-
-    <div class="form-group">
-      <label for="department">Department</label>
-      <select id="department">
-        <option value="">Select department...</option>
-      </select>
+    <div class="tabs-container">
+        <button class="tab-button active" data-tab="new-entry">New Entry</button>
+        <button class="tab-button" data-tab="history">History</button>
+        <button class="tab-button" data-tab="settings">Settings</button>
     </div>
 
-    <div class="form-group">
-      <label for="entry-date">Date</label>
-      <input type="date" id="entry-date">
+    <!-- NEW ENTRY TAB -->
+    <div id="new-entry" class="tab-content active">
+        <form id="buildForm">
+            <!-- ASSOCIATE -->
+            <div class="form-group">
+                <label for="associate">Associate</label>
+                <div class="chips-container" id="associateChips"></div>
+            </div>
+
+            <!-- DEPARTMENT -->
+            <div class="form-group">
+                <label for="department">Department</label>
+                <div class="select-wrapper">
+                    <select id="department" required>
+                        <option value="">Select Department</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- DATE -->
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" required readonly>
+            </div>
+
+            <!-- KEY NUMBER SEARCH -->
+            <div class="form-group">
+                <label for="keyNumberSearch">Key Number</label>
+                <div class="search-wrapper">
+                    <input
+                        type="text"
+                        id="keyNumberSearch"
+                        class="search-input"
+                        placeholder="Search by key, part #, or description"
+                        autocomplete="off"
+                    >
+                    <button type="button" class="search-clear" id="clearKeySearch" style="display: none;">✕</button>
+                    <div class="search-dropdown" id="keySearchDropdown"></div>
+                </div>
+            </div>
+
+            <!-- AUTO-FILLED FIELDS -->
+            <div class="form-group">
+                <label for="keyNumberDisplay">Key Number</label>
+                <input type="text" id="keyNumberDisplay" readonly disabled>
+            </div>
+
+            <div class="form-group">
+                <label for="partNumber">Part Number</label>
+                <input type="text" id="partNumber" readonly disabled>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" id="description" readonly disabled>
+            </div>
+
+            <!-- QUANTITY -->
+            <div class="form-group">
+                <label>Quantity</label>
+                <div class="quantity-stepper">
+                    <button type="button" class="quantity-btn" id="quantityMinus">−</button>
+                    <div class="quantity-display" id="quantityDisplay">1</div>
+                    <button type="button" class="quantity-btn" id="quantityPlus">+</button>
+                </div>
+            </div>
+
+            <!-- LOCATION STORED -->
+            <div class="form-group">
+                <label for="location">Location Stored</label>
+                <input type="text" id="location" placeholder="e.g., Shelf A, Bin 5">
+            </div>
+
+            <!-- NOTES -->
+            <div class="form-group">
+                <label for="notes">Notes (Optional)</label>
+                <textarea id="notes" placeholder="Add any additional details..."></textarea>
+            </div>
+
+            <!-- SUBMIT -->
+            <button type="submit" class="submit-btn">Submit Build Log</button>
+        </form>
     </div>
 
-    <div class="form-group">
-      <label for="part-number">Part Number</label>
-      <input type="text" id="part-number" placeholder="Enter part number" autocomplete="off">
+    <!-- HISTORY TAB -->
+    <div id="history" class="tab-content">
+        <div id="statsBar"></div>
+        <div id="historyList"></div>
     </div>
 
-    <div class="form-group">
-      <label for="description">Description</label>
-      <input type="text" id="description" placeholder="What was built?" autocomplete="off">
+    <!-- SETTINGS TAB -->
+    <div id="settings" class="tab-content">
+        <!-- MANAGE ASSOCIATES -->
+        <div class="settings-section">
+            <h3>Manage Associates</h3>
+            <div class="tag-input">
+                <input type="text" id="newAssociate" placeholder="Add new associate name">
+                <button type="button" class="submit-btn" style="margin: 0;" id="addAssociateBtn">Add</button>
+            </div>
+            <div class="tags-list" id="associatesList"></div>
+        </div>
+
+        <!-- MANAGE DEPARTMENTS -->
+        <div class="settings-section">
+            <h3>Manage Departments</h3>
+            <div class="tag-input">
+                <input type="text" id="newDepartment" placeholder="Add new department">
+                <button type="button" class="submit-btn" style="margin: 0;" id="addDepartmentBtn">Add</button>
+            </div>
+            <div class="tags-list" id="departmentsList"></div>
+        </div>
+
+        <!-- MANAGE LOCATIONS -->
+        <div class="settings-section">
+            <h3>Manage Locations</h3>
+            <div class="tag-input">
+                <input type="text" id="newLocation" placeholder="Add new location">
+                <button type="button" class="submit-btn" style="margin: 0;" id="addLocationBtn">Add</button>
+            </div>
+            <div class="tags-list" id="locationsList"></div>
+        </div>
+
+        <!-- DATA MANAGEMENT -->
+        <div class="settings-section">
+            <h3>Data Management</h3>
+            <div class="export-buttons">
+                <button type="button" class="export-btn" id="exportAllBtn">Export All</button>
+                <button type="button" class="export-btn" id="exportTodayBtn">Export Today</button>
+            </div>
+        </div>
+
+        <!-- DANGER ZONE -->
+        <div class="danger-zone">
+            <h4>Danger Zone</h4>
+            <button type="button" class="danger-btn" id="clearAllBtn">Clear All Data</button>
+        </div>
     </div>
 
-    <div class="form-group">
-      <label>Quantity</label>
-      <div class="qty-row">
-        <button class="qty-btn" onclick="adjustQty(-1)">-</button>
-        <input type="number" id="quantity" value="1" min="1" inputmode="numeric">
-        <button class="qty-btn" onclick="adjustQty(1)">+</button>
-      </div>
-    </div>
+    <script>
+        // ========== PARTS CATALOG ==========
+        const PARTS_CATALOG = [
+            {key: 85, part: "05-04-550", desc: "Blower Complete XL 8\" 5 Bld Blue Liner"},
+            {key: 86, part: "06-04-550", desc: "Blower Complete Z10 10\" 5 Bld Blue Liner"},
+            {key: 87, part: "05-03-550E", desc: "Blower Complete XL 8\" Diamond Liner E-Start NO PACK"},
+            {key: 88, part: "06-03-550E", desc: "Blower Complete Z10 Diamond Liner E-Start NO PACK"},
+            {key: 95, part: "05-04-500", desc: "Blower Complete XL 8\" 5 Bld Stnd Liner"},
+            {key: 96, part: "06-04-500", desc: "Blower Complete Z10 10\" 5 Bld Stnd Liner"},
+            {key: 97, part: "05-03-500E", desc: "Blower Complete XL 8\" STD Liner E-Start NO PACK"},
+            {key: 98, part: "06-03-500E", desc: "Blower Complete Z10 STD Liner E-Start NO PACK"},
+            {key: 100, part: "01-04-510", desc: "Commander Blower Complete- XR STD Liner"},
+            {key: 101, part: "01-04-200", desc: "XR Blower Complete 7\" 4 Blade Std Liner"},
+            {key: 102, part: "01-04-560", desc: "Commander Blower Complete- XR BDL"},
+            {key: 103, part: "01-04-250", desc: "XR Blower Complete 7\" 4 Blade BDL Liner"},
+            {key: 104, part: "02-04-400", desc: "Commercial Blower Complete- XR STD Liner"},
+            {key: 105, part: "02-04-450", desc: "Commercial Blower Complete- XR BDL Liner"},
+            {key: 109, part: "01-04-610", desc: "Commander Blower Complete- VG12 STD Liner"},
+            {key: 110, part: "01-04-660", desc: "Commander Blower Complete- VG12 BDL Liner"},
+            {key: 111, part: "02-04-600", desc: "Commercial Blower Complete- VG12 STD Liner"},
+            {key: 112, part: "02-04-650", desc: "Commercial Blower Complete- VG12 BDL Liner"}
+        ];
 
-    <div class="form-group">
-      <label for="location">Location Stored</label>
-      <input type="text" id="location" placeholder="Where is it stored?" autocomplete="off">
-    </div>
+        // ========== DEFAULTS ==========
+        const DEFAULT_DEPARTMENTS = ['MDA', 'Box 1', 'Engine Line', 'Aftermarket', 'Mailroom'];
+        const DEFAULT_ASSOCIATES = ['Hector Burgos', 'Jose Ocasio', 'Pedro Ramos', 'Jesus Carrasquillo'];
+        const DEFAULT_LOCATIONS = [];
 
-    <div class="form-group">
-      <label for="notes">Notes (optional)</label>
-      <textarea id="notes" rows="2" placeholder="Any issues, delays, or comments..." style="font-family:inherit;resize:vertical;"></textarea>
-    </div>
+        // ========== STATE ==========
+        let state = {
+            entries: [],
+            departments: DEFAULT_DEPARTMENTS,
+            associates: DEFAULT_ASSOCIATES,
+            locations: DEFAULT_LOCATIONS,
+            selectedAssociate: null,
+            quantity: 1,
+            selectedPart: null
+        };
 
-    <button class="btn-submit" id="btn-submit" onclick="submitEntry()">Submit Entry</button>
+        // ========== LOCAL STORAGE ==========
+        function loadState() {
+            const saved = localStorage.getItem('wpp_state');
+            if (saved) {
+                const data = JSON.parse(saved);
+                state = { ...state, ...data };
+            }
+        }
 
-    <div style="text-align:center;margin-top:8px;">
-      <button style="background:none;border:none;color:var(--wpp-green);font-size:14px;font-weight:600;cursor:pointer;padding:8px;" onclick="clearForm()">Clear Form</button>
-    </div>
-  </div>
+        function saveState() {
+            localStorage.setItem('wpp_state', JSON.stringify(state));
+        }
 
-  <!-- ════════ HISTORY TAB ════════ -->
-  <div id="panel-history" class="panel">
-    <div class="stats-bar" id="stats-bar"></div>
+        function setToday() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+        }
 
-    <div class="filter-row">
-      <select id="filter-dept" onchange="renderHistory()">
-        <option value="">All Departments</option>
-      </select>
-      <select id="filter-associate" onchange="renderHistory()">
-        <option value="">All Associates</option>
-      </select>
-      <input type="date" id="filter-date" onchange="renderHistory()" style="flex:1;padding:10px;font-size:13px;border:1px solid var(--gray-300);border-radius:var(--radius);">
-    </div>
+        // ========== INIT ==========
+        loadState();
+        setToday();
 
-    <div id="history-list"></div>
+        // ========== UI - TABS ==========
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
 
-    <button class="btn-secondary" onclick="exportToExcel()" style="margin-top:16px;">Export to Excel (.xlsx)</button>
-    <button class="btn-secondary" onclick="exportTodayToExcel()" style="margin-top:6px;">Export Today Only</button>
-  </div>
+                btn.classList.add('active');
+                const tabId = btn.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
 
-  <!-- ════════ SETTINGS TAB ════════ -->
-  <div id="panel-settings" class="panel">
+                if (tabId === 'history') {
+                    renderHistory();
+                }
+                if (tabId === 'settings') {
+                    renderSettings();
+                }
+            });
+        });
 
-    <div class="settings-section">
-      <h3>Departments</h3>
-      <div class="tag-list" id="dept-tags"></div>
-      <div class="add-row">
-        <input type="text" id="new-dept" placeholder="Add department...">
-        <button onclick="addDepartment()">Add</button>
-      </div>
-    </div>
+        // ========== UI - RENDER ASSOCIATES CHIPS ==========
+        function renderAssociateChips() {
+            const container = document.getElementById('associateChips');
+            container.innerHTML = '';
+            state.associates.forEach(associate => {
+                const chip = document.createElement('div');
+                chip.className = `chip ${state.selectedAssociate === associate ? 'selected' : ''}`;
+                chip.textContent = associate;
+                chip.addEventListener('click', () => {
+                    state.selectedAssociate = state.selectedAssociate === associate ? null : associate;
+                    saveState();
+                    renderAssociateChips();
+                });
+                container.appendChild(chip);
+            });
+        }
 
-    <div class="settings-section">
-      <h3>Associates</h3>
-      <div class="tag-list" id="assoc-tags"></div>
-      <div class="add-row">
-        <input type="text" id="new-assoc" placeholder="Add associate name...">
-        <button onclick="addAssociate()">Add</button>
-      </div>
-    </div>
+        // ========== UI - RENDER DEPARTMENTS ==========
+        function renderDepartments() {
+            const select = document.getElementById('department');
+            const currentValue = select.value;
+            select.innerHTML = '<option value="">Select Department</option>';
+            state.departments.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept;
+                option.textContent = dept;
+                select.appendChild(option);
+            });
+            select.value = currentValue;
+        }
 
-    <div class="settings-section">
-      <h3>Common Locations</h3>
-      <div class="tag-list" id="loc-tags"></div>
-      <div class="add-row">
-        <input type="text" id="new-loc" placeholder="Add location...">
-        <button onclick="addLocation()">Add</button>
-      </div>
-    </div>
+        // ========== SEARCH - FUZZY MATCH ==========
+        function fuzzyMatch(query, text) {
+            const q = query.toLowerCase();
+            const t = text.toLowerCase();
+            if (!q) return true;
 
-    <div class="settings-section">
-      <h3>Data Management</h3>
-      <p style="font-size:13px;color:var(--gray-700);margin-bottom:12px;">
-        Export all build sheet data, or clear the log. Data is stored in this browser &mdash; export regularly to keep a backup in OneDrive.
-      </p>
-      <button class="btn-secondary" onclick="exportToExcel()">Export All Data to Excel</button>
-      <button class="btn-danger" onclick="confirmClearAll()">Clear All Entries</button>
-    </div>
-  </div>
+            let qi = 0;
+            for (let ti = 0; ti < t.length && qi < q.length; ti++) {
+                if (t[qi] === q[qi]) {
+                    qi++;
+                }
+            }
+            return qi === q.length;
+        }
 
-</div>
+        // ========== SEARCH - KEY NUMBER ==========
+        const keySearchInput = document.getElementById('keyNumberSearch');
+        const keySearchDropdown = document.getElementById('keySearchDropdown');
+        const clearKeySearch = document.getElementById('clearKeySearch');
 
-<div class="toast" id="toast"></div>
+        keySearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
 
-<script>
-// ══════════════════════════════════════════
-// CONFIGURATION — Edit these lists anytime
-// ══════════════════════════════════════════
-const DEFAULT_DEPARTMENTS = ['MDA', 'Box 1', 'Engine Line', 'Aftermarket', 'Mailroom'];
-const DEFAULT_ASSOCIATES = ['Hector Burgos', 'Jose Ocasio', 'Pedro Ramos', 'Jesus Carrasquillo'];
-const DEFAULT_LOCATIONS = [];
+            if (!query) {
+                keySearchDropdown.classList.remove('show');
+                clearKeySearch.style.display = 'none';
+                return;
+            }
 
-// Google Sheets sync URL (Apps Script Web App)
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxdKw3SFT1pcmr0ZtnOpAlY60Xpz7rnPWj3TkSKOje1r4im50aaNdyFFAmP3CsV1ijL/exec';
+            clearKeySearch.style.display = 'block';
 
-// ══════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════
-let entries = JSON.parse(localStorage.getItem('wpp_entries') || '[]');
-let departments = JSON.parse(localStorage.getItem('wpp_departments') || 'null') || [...DEFAULT_DEPARTMENTS];
-let associates = JSON.parse(localStorage.getItem('wpp_associates') || 'null') || [...DEFAULT_ASSOCIATES];
-let locations = JSON.parse(localStorage.getItem('wpp_locations') || 'null') || [...DEFAULT_LOCATIONS];
-let selectedAssociate = localStorage.getItem('wpp_selected_associate') || '';
+            const filtered = PARTS_CATALOG.filter(item =>
+                fuzzyMatch(query, String(item.key)) ||
+                fuzzyMatch(query, item.part) ||
+                fuzzyMatch(query, item.desc)
+            );
 
-function saveState() {
-  localStorage.setItem('wpp_entries', JSON.stringify(entries));
-  localStorage.setItem('wpp_departments', JSON.stringify(departments));
-  localStorage.setItem('wpp_associates', JSON.stringify(associates));
-  localStorage.setItem('wpp_locations', JSON.stringify(locations));
-  localStorage.setItem('wpp_selected_associate', selectedAssociate);
-}
+            keySearchDropdown.innerHTML = '';
+            if (filtered.length === 0) {
+                keySearchDropdown.innerHTML = '<div class="dropdown-item">No matches found</div>';
+                keySearchDropdown.classList.add('show');
+                return;
+            }
 
-// ══════════════════════════════════════════
-// TAB NAVIGATION
-// ══════════════════════════════════════════
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', ['form','history','settings'][i] === tab);
-  });
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + tab).classList.add('active');
-  if (tab === 'history') renderHistory();
-  if (tab === 'settings') renderSettings();
-}
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'dropdown-item';
+                div.innerHTML = `
+                    <strong>${item.key}</strong>
+                    <span>${item.part} — ${item.desc}</span>
+                `;
+                div.addEventListener('click', () => selectPart(item));
+                keySearchDropdown.appendChild(div);
+            });
 
-// ══════════════════════════════════════════
-// FORM
-// ══════════════════════════════════════════
-function initForm() {
-  // Set today's date
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('entry-date').value = today;
+            keySearchDropdown.classList.add('show');
+        });
 
-  // Populate department dropdown
-  renderDeptDropdown();
+        // ========== SEARCH - CLOSE DROPDOWN ON OUTSIDE CLICK ==========
+        document.addEventListener('click', (e) => {
+            if (!document.querySelector('.search-wrapper').contains(e.target)) {
+                keySearchDropdown.classList.remove('show');
+            }
+        });
 
-  // Render associate chips
-  renderAssociateChips();
-}
+        // ========== SEARCH - SELECT PART ==========
+        function selectPart(item) {
+            state.selectedPart = item;
+            keySearchInput.value = '';
+            keySearchDropdown.classList.remove('show');
+            clearKeySearch.style.display = 'none';
 
-function renderDeptDropdown() {
-  const sel = document.getElementById('department');
-  const current = sel.value;
-  sel.innerHTML = '<option value="">Select department...</option>';
-  departments.forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d;
-    opt.textContent = d;
-    sel.appendChild(opt);
-  });
-  if (current && departments.includes(current)) sel.value = current;
-}
+            document.getElementById('keyNumberDisplay').value = item.key;
+            document.getElementById('partNumber').value = item.part;
+            document.getElementById('description').value = item.desc;
 
-function renderAssociateChips() {
-  const container = document.getElementById('associate-chips');
-  container.innerHTML = '';
-  associates.forEach(name => {
-    const chip = document.createElement('div');
-    chip.className = 'associate-chip' + (selectedAssociate === name ? ' selected' : '');
-    chip.textContent = name.split(' ')[0]; // First name only on chip
-    chip.title = name;
-    chip.onclick = () => {
-      selectedAssociate = selectedAssociate === name ? '' : name;
-      saveState();
-      renderAssociateChips();
-    };
-    container.appendChild(chip);
-  });
-}
+            saveState();
+        }
 
-function adjustQty(delta) {
-  const input = document.getElementById('quantity');
-  const newVal = Math.max(1, parseInt(input.value || '1') + delta);
-  input.value = newVal;
-}
+        // ========== CLEAR KEY SEARCH ==========
+        clearKeySearch.addEventListener('click', (e) => {
+            e.preventDefault();
+            keySearchInput.value = '';
+            clearPart();
+            clearKeySearch.style.display = 'none';
+            keySearchDropdown.classList.remove('show');
+        });
 
-function submitEntry() {
-  const dept = document.getElementById('department').value;
-  const date = document.getElementById('entry-date').value;
-  const partNum = document.getElementById('part-number').value.trim();
-  const desc = document.getElementById('description').value.trim();
-  const qty = parseInt(document.getElementById('quantity').value) || 0;
-  const loc = document.getElementById('location').value.trim();
-  const notes = document.getElementById('notes').value.trim();
+        function clearPart() {
+            state.selectedPart = null;
+            document.getElementById('keyNumberDisplay').value = '';
+            document.getElementById('partNumber').value = '';
+            document.getElementById('description').value = '';
+            saveState();
+        }
 
-  // Validation
-  if (!selectedAssociate) { showToast('Please select an associate'); return; }
-  if (!dept) { showToast('Please select a department'); return; }
-  if (!date) { showToast('Please enter a date'); return; }
-  if (!partNum) { showToast('Please enter a part number'); return; }
-  if (!desc) { showToast('Please enter a description'); return; }
-  if (qty < 1) { showToast('Quantity must be at least 1'); return; }
-  if (!loc) { showToast('Please enter a location'); return; }
+        // ========== QUANTITY STEPPER ==========
+        document.getElementById('quantityMinus').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (state.quantity > 1) {
+                state.quantity--;
+                document.getElementById('quantityDisplay').textContent = state.quantity;
+                saveState();
+            }
+        });
 
-  const entry = {
-    id: Date.now().toString(36) + Math.random().toString(36).substr(2,4),
-    associate: selectedAssociate,
-    department: dept,
-    date: date,
-    partNumber: partNum,
-    description: desc,
-    quantity: qty,
-    location: loc,
-    notes: notes,
-    timestamp: new Date().toISOString()
-  };
+        document.getElementById('quantityPlus').addEventListener('click', (e) => {
+            e.preventDefault();
+            state.quantity++;
+            document.getElementById('quantityDisplay').textContent = state.quantity;
+            saveState();
+        });
 
-  // Save locally
-  entries.unshift(entry);
-  saveState();
+        // ========== FORM SUBMIT ==========
+        document.getElementById('buildForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-  // Sync to Google Sheets (fire-and-forget, doesn't block the UI)
-  if (SHEETS_URL) {
-    fetch(SHEETS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        Date: entry.date,
-        Associate: entry.associate,
-        Department: entry.department,
-        PartNumber: entry.partNumber,
-        Description: entry.description,
-        Quantity: entry.quantity,
-        LocationStored: entry.location,
-        Notes: entry.notes || '',
-        SubmittedAt: new Date(entry.timestamp).toLocaleString()
-      })
-    }).catch(function() {});
-  }
+            if (!state.selectedAssociate) {
+                alert('Please select an associate');
+                return;
+            }
+            if (!document.getElementById('department').value) {
+                alert('Please select a department');
+                return;
+            }
+            if (!state.selectedPart) {
+                alert('Please select a part from the catalog');
+                return;
+            }
 
-  // Reset form fields (keep associate, dept, date)
-  document.getElementById('part-number').value = '';
-  document.getElementById('description').value = '';
-  document.getElementById('quantity').value = '1';
-  document.getElementById('location').value = '';
-  document.getElementById('notes').value = '';
+            const entry = {
+                id: Date.now(),
+                associate: state.selectedAssociate,
+                department: document.getElementById('department').value,
+                date: document.getElementById('date').value,
+                keyNumber: state.selectedPart.key,
+                partNumber: state.selectedPart.part,
+                description: state.selectedPart.desc,
+                quantity: state.quantity,
+                location: document.getElementById('location').value,
+                notes: document.getElementById('notes').value,
+                timestamp: new Date().toISOString()
+            };
 
-  showToast('Entry saved — ' + qty + 'x ' + desc);
-}
+            state.entries.push(entry);
+            saveState();
 
-function clearForm() {
-  document.getElementById('part-number').value = '';
-  document.getElementById('description').value = '';
-  document.getElementById('quantity').value = '1';
-  document.getElementById('location').value = '';
-  document.getElementById('notes').value = '';
-}
+            // GOOGLE SHEETS SYNC
+            try {
+                fetch('https://script.google.com/macros/s/AKfycbxdKw3SFT1pcmr0ZtnOpAlY60Xpz7rnPWj3TkSKOje1r4im50aaNdyFFAmP3CsV1ijL/exec', {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        Date: entry.date,
+                        Associate: entry.associate,
+                        Department: entry.department,
+                        KeyNumber: entry.keyNumber,
+                        PartNumber: entry.partNumber,
+                        Description: entry.description,
+                        Quantity: entry.quantity,
+                        LocationStored: entry.location,
+                        Notes: entry.notes,
+                        SubmittedAt: entry.timestamp
+                    })
+                }).catch(() => {});
+            } catch (err) {
+                console.log('Sheets sync attempted');
+            }
 
-// ══════════════════════════════════════════
-// HISTORY
-// ══════════════════════════════════════════
-function renderHistory() {
-  const filterDept = document.getElementById('filter-dept').value;
-  const filterAssoc = document.getElementById('filter-associate').value;
-  const filterDate = document.getElementById('filter-date').value;
+            // SHOW TOAST
+            showToast(`Build logged: ${entry.quantity} × ${entry.partNumber}`);
 
-  // Populate filter dropdowns
-  const deptSel = document.getElementById('filter-dept');
-  const currentDeptFilter = deptSel.value;
-  deptSel.innerHTML = '<option value="">All Departments</option>';
-  departments.forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d; opt.textContent = d;
-    deptSel.appendChild(opt);
-  });
-  deptSel.value = currentDeptFilter;
+            // RESET FORM
+            document.getElementById('buildForm').reset();
+            state.selectedAssociate = null;
+            state.quantity = 1;
+            state.selectedPart = null;
+            setToday();
+            saveState();
+            renderAssociateChips();
+            document.getElementById('quantityDisplay').textContent = '1';
+            clearPart();
+        });
 
-  const assocSel = document.getElementById('filter-associate');
-  const currentAssocFilter = assocSel.value;
-  assocSel.innerHTML = '<option value="">All Associates</option>';
-  associates.forEach(a => {
-    const opt = document.createElement('option');
-    opt.value = a; opt.textContent = a;
-    assocSel.appendChild(opt);
-  });
-  assocSel.value = currentAssocFilter;
+        // ========== TOAST ==========
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
 
-  // Filter entries
-  let filtered = entries.filter(e => {
-    if (filterDept && e.department !== filterDept) return false;
-    if (filterAssoc && e.associate !== filterAssoc) return false;
-    if (filterDate && e.date !== filterDate) return false;
-    return true;
-  });
+        // ========== HISTORY RENDERING ==========
+        function renderHistory() {
+            const historyList = document.getElementById('historyList');
+            const statsBar = document.getElementById('statsBar');
 
-  // Stats
-  const today = new Date().toISOString().split('T')[0];
-  const todayEntries = entries.filter(e => e.date === today);
-  const todayQty = todayEntries.reduce((s,e) => s + e.quantity, 0);
-  const filteredQty = filtered.reduce((s,e) => s + e.quantity, 0);
+            // STATS
+            const today = new Date().toISOString().split('T')[0];
+            const todayEntries = state.entries.filter(e => e.date === today);
+            const todayQuantity = todayEntries.reduce((sum, e) => sum + e.quantity, 0);
+            const todayParts = new Set(todayEntries.map(e => e.keyNumber)).size;
 
-  document.getElementById('stats-bar').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-num">${todayQty}</div>
-      <div class="stat-label">Built Today</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num">${todayEntries.length}</div>
-      <div class="stat-label">Entries Today</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num">${entries.length}</div>
-      <div class="stat-label">Total Entries</div>
-    </div>
-  `;
+            statsBar.innerHTML = `
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-value">${todayEntries.length}</div>
+                        <div class="stat-label">Entries</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${todayQuantity}</div>
+                        <div class="stat-label">Units</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${todayParts}</div>
+                        <div class="stat-label">Parts</div>
+                    </div>
+                </div>
+            `;
 
-  // Render cards
-  const list = document.getElementById('history-list');
-  if (filtered.length === 0) {
-    list.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">&#128203;</div>
-        <p>No entries yet. Submit your first build!</p>
-      </div>`;
-    return;
-  }
+            // ENTRIES
+            if (state.entries.length === 0) {
+                historyList.innerHTML = '<div class="empty-state"><p>No entries yet</p><span>Start logging builds to see them here</span></div>';
+                return;
+            }
 
-  list.innerHTML = filtered.slice(0, 50).map(e => `
-    <div class="history-card">
-      <div class="hc-top">
-        <span class="hc-dept">${e.department}</span>
-        <span class="hc-date">${formatDate(e.date)}</span>
-      </div>
-      <div class="hc-body">
-        <span class="hc-qty">${e.quantity}</span>
-        <strong>${e.partNumber}</strong> &mdash; ${e.description}<br>
-        <span style="color:var(--gray-500);">Location: ${e.location}</span>
-        ${e.notes ? '<br><em style="font-size:12px;color:var(--gray-500);">' + e.notes + '</em>' : ''}
-      </div>
-      <div class="hc-associate">${e.associate} &bull; ${formatTime(e.timestamp)}</div>
-      <button class="hc-delete" onclick="deleteEntry('${e.id}')">Delete</button>
-    </div>
-  `).join('');
-}
+            const sorted = [...state.entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            historyList.innerHTML = sorted.map(entry => {
+                const time = new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const date = new Date(entry.date).toLocaleDateString();
+                return `
+                    <div class="history-card">
+                        <div class="history-card-header">
+                            <div class="history-card-title">${entry.partNumber}</div>
+                            <div class="history-card-time">${time}</div>
+                        </div>
+                        <div class="history-card-row">
+                            <span class="history-card-label">Associate</span>
+                            <span class="history-card-value">${entry.associate}</span>
+                        </div>
+                        <div class="history-card-row">
+                            <span class="history-card-label">Department</span>
+                            <span class="history-card-value">${entry.department}</span>
+                        </div>
+                        <div class="history-card-row">
+                            <span class="history-card-label">Key Number</span>
+                            <span class="history-card-value">${entry.keyNumber}</span>
+                        </div>
+                        <div class="history-card-row">
+                            <span class="history-card-label">Description</span>
+                            <span class="history-card-value">${entry.description}</span>
+                        </div>
+                        <div class="history-card-row">
+                            <span class="history-card-label">Quantity</span>
+                            <span class="history-card-value">${entry.quantity}</span>
+                        </div>
+                        <div class="history-card-row">
+                            <span class="history-card-label">Location</span>
+                            <span class="history-card-value">${entry.location || '—'}</span>
+                        </div>
+                        ${entry.notes ? `
+                        <div class="history-card-row">
+                            <span class="history-card-label">Notes</span>
+                            <span class="history-card-value">${entry.notes}</span>
+                        </div>
+                        ` : ''}
+                        <div class="history-card-row">
+                            <span class="history-card-label">Date</span>
+                            <span class="history-card-value">${date}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
-function deleteEntry(id) {
-  if (!confirm('Delete this entry?')) return;
-  entries = entries.filter(e => e.id !== id);
-  saveState();
-  renderHistory();
-  showToast('Entry deleted');
-}
+        // ========== SETTINGS RENDERING ==========
+        function renderSettings() {
+            renderAssociatesSettings();
+            renderDepartmentsSettings();
+            renderLocationsSettings();
+        }
 
-function confirmClearAll() {
-  if (!confirm('This will permanently delete ALL build sheet entries. Are you sure?')) return;
-  if (!confirm('Really delete everything? This cannot be undone.')) return;
-  entries = [];
-  saveState();
-  renderHistory();
-  showToast('All entries cleared');
-}
+        function renderAssociatesSettings() {
+            const list = document.getElementById('associatesList');
+            list.innerHTML = state.associates.map(assoc => `
+                <div class="tag-item">
+                    ${assoc}
+                    <span class="tag-remove" onclick="removeAssociate('${assoc.replace(/'/g, "\\'")}')">×</span>
+                </div>
+            `).join('');
+        }
 
-// ══════════════════════════════════════════
-// EXCEL EXPORT
-// ══════════════════════════════════════════
-function exportToExcel() {
-  if (entries.length === 0) { showToast('No entries to export'); return; }
-  buildAndDownloadXLSX(entries, 'WPP_Build_Sheet_All');
-}
+        function renderDepartmentsSettings() {
+            const list = document.getElementById('departmentsList');
+            list.innerHTML = state.departments.map(dept => `
+                <div class="tag-item">
+                    ${dept}
+                    <span class="tag-remove" onclick="removeDepartment('${dept.replace(/'/g, "\\'")}')">×</span>
+                </div>
+            `).join('');
+        }
 
-function exportTodayToExcel() {
-  const today = new Date().toISOString().split('T')[0];
-  const todayEntries = entries.filter(e => e.date === today);
-  if (todayEntries.length === 0) { showToast('No entries for today'); return; }
-  buildAndDownloadXLSX(todayEntries, 'WPP_Build_Sheet_' + today);
-}
+        function renderLocationsSettings() {
+            const list = document.getElementById('locationsList');
+            list.innerHTML = state.locations.map(loc => `
+                <div class="tag-item">
+                    ${loc}
+                    <span class="tag-remove" onclick="removeLocation('${loc.replace(/'/g, "\\'")}')">×</span>
+                </div>
+            `).join('');
+        }
 
-function buildAndDownloadXLSX(data, filename) {
-  const rows = data.map(e => ({
-    'Date': e.date,
-    'Associate': e.associate,
-    'Department': e.department,
-    'Part Number': e.partNumber,
-    'Description': e.description,
-    'Quantity': e.quantity,
-    'Location Stored': e.location,
-    'Notes': e.notes || '',
-    'Submitted At': new Date(e.timestamp).toLocaleString()
-  }));
+        // ========== SETTINGS ACTIONS ==========
+        window.removeAssociate = function(assoc) {
+            state.associates = state.associates.filter(a => a !== assoc);
+            if (state.selectedAssociate === assoc) state.selectedAssociate = null;
+            saveState();
+            renderAssociateChips();
+            renderAssociatesSettings();
+        };
 
-  const ws = XLSX.utils.json_to_sheet(rows);
+        window.removeDepartment = function(dept) {
+            state.departments = state.departments.filter(d => d !== dept);
+            saveState();
+            renderDepartments();
+            renderDepartmentsSettings();
+        };
 
-  // Column widths
-  ws['!cols'] = [
-    {wch: 12}, // Date
-    {wch: 20}, // Associate
-    {wch: 14}, // Department
-    {wch: 16}, // Part Number
-    {wch: 30}, // Description
-    {wch: 10}, // Quantity
-    {wch: 18}, // Location
-    {wch: 30}, // Notes
-    {wch: 20}, // Submitted At
-  ];
+        window.removeLocation = function(loc) {
+            state.locations = state.locations.filter(l => l !== loc);
+            saveState();
+            renderLocationsSettings();
+        };
 
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Build Sheet');
-  XLSX.writeFile(wb, filename + '.xlsx');
-  showToast('Excel file downloaded');
-}
+        document.getElementById('addAssociateBtn').addEventListener('click', () => {
+            const input = document.getElementById('newAssociate');
+            const name = input.value.trim();
+            if (name && !state.associates.includes(name)) {
+                state.associates.push(name);
+                input.value = '';
+                saveState();
+                renderAssociateChips();
+                renderAssociatesSettings();
+            }
+        });
 
-// ══════════════════════════════════════════
-// SETTINGS
-// ══════════════════════════════════════════
-function renderSettings() {
-  renderTags('dept-tags', departments, removeDepartment);
-  renderTags('assoc-tags', associates, removeAssociate);
-  renderTags('loc-tags', locations, removeLocation);
-}
+        document.getElementById('addDepartmentBtn').addEventListener('click', () => {
+            const input = document.getElementById('newDepartment');
+            const dept = input.value.trim();
+            if (dept && !state.departments.includes(dept)) {
+                state.departments.push(dept);
+                input.value = '';
+                saveState();
+                renderDepartments();
+                renderDepartmentsSettings();
+            }
+        });
 
-function renderTags(containerId, items, removeFn) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = items.map((item, i) =>
-    `<span class="tag">${item}<span class="remove-tag" onclick="event.stopPropagation();(${removeFn.name})(${i})">&times;</span></span>`
-  ).join('');
-}
+        document.getElementById('addLocationBtn').addEventListener('click', () => {
+            const input = document.getElementById('newLocation');
+            const loc = input.value.trim();
+            if (loc && !state.locations.includes(loc)) {
+                state.locations.push(loc);
+                input.value = '';
+                saveState();
+                renderLocationsSettings();
+            }
+        });
 
-function addDepartment() {
-  const input = document.getElementById('new-dept');
-  const val = input.value.trim();
-  if (!val || departments.includes(val)) { input.value = ''; return; }
-  departments.push(val);
-  input.value = '';
-  saveState();
-  renderSettings();
-  renderDeptDropdown();
-}
+        // ========== EXPORT ==========
+        function exportToExcel(todayOnly = false) {
+            const data = todayOnly
+                ? state.entries.filter(e => e.date === new Date().toISOString().split('T')[0])
+                : state.entries;
 
-function removeDepartment(i) {
-  departments.splice(i, 1);
-  saveState();
-  renderSettings();
-  renderDeptDropdown();
-}
+            if (data.length === 0) {
+                alert('No data to export');
+                return;
+            }
 
-function addAssociate() {
-  const input = document.getElementById('new-assoc');
-  const val = input.value.trim();
-  if (!val || associates.includes(val)) { input.value = ''; return; }
-  associates.push(val);
-  input.value = '';
-  saveState();
-  renderSettings();
-  renderAssociateChips();
-}
+            const rows = [
+                ['Date', 'Associate', 'Department', 'Key Number', 'Part Number', 'Description', 'Quantity', 'Location Stored', 'Notes', 'Submitted At'],
+                ...data.map(e => [
+                    e.date,
+                    e.associate,
+                    e.department,
+                    e.keyNumber,
+                    e.partNumber,
+                    e.description,
+                    e.quantity,
+                    e.location,
+                    e.notes,
+                    e.timestamp
+                ])
+            ];
 
-function removeAssociate(i) {
-  associates.splice(i, 1);
-  saveState();
-  renderSettings();
-  renderAssociateChips();
-}
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Build Log');
+            XLSX.writeFile(wb, `wpp-build-log-${todayOnly ? 'today' : 'all'}.xlsx`);
+        }
 
-function addLocation() {
-  const input = document.getElementById('new-loc');
-  const val = input.value.trim();
-  if (!val || locations.includes(val)) { input.value = ''; return; }
-  locations.push(val);
-  input.value = '';
-  saveState();
-  renderSettings();
-}
+        document.getElementById('exportAllBtn').addEventListener('click', () => exportToExcel(false));
+        document.getElementById('exportTodayBtn').addEventListener('click', () => exportToExcel(true));
 
-function removeLocation(i) {
-  locations.splice(i, 1);
-  saveState();
-  renderSettings();
-}
+        document.getElementById('clearAllBtn').addEventListener('click', () => {
+            if (confirm('Are you sure? This will delete ALL data and cannot be undone.')) {
+                state.entries = [];
+                state.selectedAssociate = null;
+                state.quantity = 1;
+                state.selectedPart = null;
+                saveState();
+                showToast('All data cleared');
+                const historyTab = document.querySelector('[data-tab="history"]');
+                historyTab.click();
+            }
+        });
 
-// ══════════════════════════════════════════
-// UTILITIES
-// ══════════════════════════════════════════
-function formatDate(dateStr) {
-  const d = new Date(dateStr + 'T12:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
+        // ========== INIT RENDER ==========
+        renderAssociateChips();
+        renderDepartments();
 
-function formatTime(isoStr) {
-  return new Date(isoStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-}
-
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
-}
-
-// ══════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════
-initForm();
-</script>
+        // Allow Enter key on location input to focus notes
+        document.getElementById('location').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('notes').focus();
+            }
+        });
+    </script>
 </body>
 </html>
