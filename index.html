@@ -1383,19 +1383,23 @@
                 const resp = await fetch(APPS_SCRIPT_URL + '?action=getAll');
                 const data = await resp.json();
                 if (Array.isArray(data)) {
-                    cloudEntries = data.map((row, idx) => ({
-                        _cloudIndex: idx,
-                        associate: row.Associate || '',
-                        department: row.Department || '',
-                        date: formatDateValue(row.Date || ''),
-                        keyNumber: row.KeyNumber || row['KeyNumber'] || '',
-                        partNumber: row.PartNumber || row['PartNumber'] || '',
-                        description: row.Description || '',
-                        quantity: parseInt(row.Quantity) || 0,
-                        location: row.LocationStored || row['LocationStored'] || '',
-                        notes: row.Notes || '',
-                        timestamp: row.SubmittedAt || row['SubmittedAt'] || ''
-                    }));
+                    cloudEntries = data.map((row, idx) => {
+                        const rawKey = row.KeyNumber || row['KeyNumber'] || '';
+                        const catalogMatch = PARTS_CATALOG.find(p => String(p.key) === String(rawKey));
+                        return {
+                            _cloudIndex: idx,
+                            associate: row.Associate || '',
+                            department: row.Department || '',
+                            date: formatDateValue(row.Date || ''),
+                            keyNumber: rawKey,
+                            partNumber: catalogMatch ? catalogMatch.part : (row.PartNumber || row['PartNumber'] || ''),
+                            description: catalogMatch ? catalogMatch.desc : (row.Description || ''),
+                            quantity: parseInt(row.Quantity) || 0,
+                            location: row.LocationStored || row['LocationStored'] || '',
+                            notes: row.Notes || '',
+                            timestamp: row.SubmittedAt || row['SubmittedAt'] || ''
+                        };
+                    });
                     renderHistory();
                     if (!silent) showToast(`Loaded ${cloudEntries.length} entries from cloud`);
                 }
@@ -1495,7 +1499,6 @@
                                 <div class="history-card-title">${entry.partNumber || 'Unknown Part'}</div>
                                 <div class="history-card-time">${displayDate}${displayTime ? ' \u2022 ' + displayTime : ''}</div>
                             </div>
-                            <div class="history-card-badge">\u00d7${entry.quantity}</div>
                         </div>
                         <div class="history-card-row">
                             <span class="history-card-label">Associate</span>
@@ -1508,6 +1511,10 @@
                         <div class="history-card-row">
                             <span class="history-card-label">Key #</span>
                             <span class="history-card-value">${entry.keyNumber || '\u2014'}</span>
+                        </div>
+                        <div class="history-card-row">
+                            <span class="history-card-label">Quantity</span>
+                            <span class="history-card-value">${entry.quantity}</span>
                         </div>
                         <div class="history-card-row">
                             <span class="history-card-label">Description</span>
