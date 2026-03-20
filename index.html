@@ -1090,24 +1090,28 @@
     <script>
         // ========== PARTS CATALOG ==========
         const PARTS_CATALOG = [
-            {key: 85, part: "05-04-550", desc: "Blower Complete XL 8\" 5 Bld Blue Liner"},
-            {key: 86, part: "06-04-550", desc: "Blower Complete Z10 10\" 5 Bld Blue Liner"},
-            {key: 87, part: "05-03-550E", desc: "Blower Complete XL 8\" Diamond Liner E-Start NO PACK"},
-            {key: 88, part: "06-03-550E", desc: "Blower Complete Z10 Diamond Liner E-Start NO PACK"},
-            {key: 95, part: "05-04-500", desc: "Blower Complete XL 8\" 5 Bld Stnd Liner"},
-            {key: 96, part: "06-04-500", desc: "Blower Complete Z10 10\" 5 Bld Stnd Liner"},
-            {key: 97, part: "05-03-500E", desc: "Blower Complete XL 8\" STD Liner E-Start NO PACK"},
-            {key: 98, part: "06-03-500E", desc: "Blower Complete Z10 STD Liner E-Start NO PACK"},
-            {key: 100, part: "01-04-510", desc: "Commander Blower Complete- XR STD Liner"},
-            {key: 101, part: "01-04-200", desc: "XR Blower Complete 7\" 4 Blade Std Liner"},
-            {key: 102, part: "01-04-560", desc: "Commander Blower Complete- XR BDL"},
-            {key: 103, part: "01-04-250", desc: "XR Blower Complete 7\" 4 Blade BDL Liner"},
-            {key: 104, part: "02-04-400", desc: "Commercial Blower Complete- XR STD Liner"},
-            {key: 105, part: "02-04-450", desc: "Commercial Blower Complete- XR BDL Liner"},
-            {key: 109, part: "01-04-610", desc: "Commander Blower Complete- VG12 STD Liner"},
-            {key: 110, part: "01-04-660", desc: "Commander Blower Complete- VG12 BDL Liner"},
-            {key: 111, part: "02-04-600", desc: "Commercial Blower Complete- VG12 STD Liner"},
-            {key: 112, part: "02-04-650", desc: "Commercial Blower Complete- VG12 BDL Liner"}
+            // Engine Line
+            {key: 85, part: "05-04-550", desc: "Blower Complete XL 8\" 5 Bld Blue Liner", dept: "Engine Line"},
+            {key: 86, part: "06-04-550", desc: "Blower Complete Z10 10\" 5 Bld Blue Liner", dept: "Engine Line"},
+            {key: 87, part: "05-03-550E", desc: "Blower Complete XL 8\" Diamond Liner E-Start NO PACK", dept: "Engine Line"},
+            {key: 88, part: "06-03-550E", desc: "Blower Complete Z10 Diamond Liner E-Start NO PACK", dept: "Engine Line"},
+            {key: 95, part: "05-04-500", desc: "Blower Complete XL 8\" 5 Bld Stnd Liner", dept: "Engine Line"},
+            {key: 96, part: "06-04-500", desc: "Blower Complete Z10 10\" 5 Bld Stnd Liner", dept: "Engine Line"},
+            {key: 97, part: "05-03-500E", desc: "Blower Complete XL 8\" STD Liner E-Start NO PACK", dept: "Engine Line"},
+            {key: 98, part: "06-03-500E", desc: "Blower Complete Z10 STD Liner E-Start NO PACK", dept: "Engine Line"},
+            {key: 100, part: "01-04-510", desc: "Commander Blower Complete- XR STD Liner", dept: "Engine Line"},
+            {key: 101, part: "01-04-200", desc: "XR Blower Complete 7\" 4 Blade Std Liner", dept: "Engine Line"},
+            {key: 102, part: "01-04-560", desc: "Commander Blower Complete- XR BDL", dept: "Engine Line"},
+            {key: 103, part: "01-04-250", desc: "XR Blower Complete 7\" 4 Blade BDL Liner", dept: "Engine Line"},
+            {key: 104, part: "02-04-400", desc: "Commercial Blower Complete- XR STD Liner", dept: "Engine Line"},
+            {key: 105, part: "02-04-450", desc: "Commercial Blower Complete- XR BDL Liner", dept: "Engine Line"},
+            {key: 109, part: "01-04-610", desc: "Commander Blower Complete- VG12 STD Liner", dept: "Engine Line"},
+            {key: 110, part: "01-04-660", desc: "Commander Blower Complete- VG12 BDL Liner", dept: "Engine Line"},
+            {key: 111, part: "02-04-600", desc: "Commercial Blower Complete- VG12 STD Liner", dept: "Engine Line"},
+            {key: 112, part: "02-04-650", desc: "Commercial Blower Complete- VG12 BDL Liner", dept: "Engine Line"}
+            // To add parts for other departments, just add entries here with the matching dept name:
+            // {key: 200, part: "XX-XX-XXX", desc: "Box 1 Part Description", dept: "Box 1"},
+            // {key: 201, part: "XX-XX-XXX", desc: "MDA Part Description", dept: "MDA"},
         ];
 
         // ========== DEFAULTS ==========
@@ -1203,24 +1207,33 @@
         const keySearchDropdown = document.getElementById('keySearchDropdown');
         const clearKeySearch = document.getElementById('clearKeySearch');
 
-        function filterCatalog(query) {
+        function filterCatalog(query, deptFilter) {
             const q = query.toLowerCase().trim();
-            if (!q) return PARTS_CATALOG;
-            return PARTS_CATALOG.filter(item =>
-                String(item.key).includes(q) ||
-                item.part.toLowerCase().includes(q) ||
-                item.desc.toLowerCase().includes(q)
-            );
+            // Start with full catalog, then filter by department if provided
+            let results = PARTS_CATALOG;
+            if (deptFilter) {
+                results = results.filter(item => item.dept === deptFilter);
+            }
+            if (q) {
+                results = results.filter(item =>
+                    String(item.key).includes(q) ||
+                    item.part.toLowerCase().includes(q) ||
+                    item.desc.toLowerCase().includes(q)
+                );
+            }
+            return results;
         }
 
         function showKeyDropdown() {
             const query = keySearchInput.value.trim();
             clearKeySearch.style.display = query ? 'block' : 'none';
 
-            const filtered = filterCatalog(query);
+            const selectedDept = document.getElementById('department').value;
+            const filtered = filterCatalog(query, selectedDept);
             keySearchDropdown.innerHTML = '';
             if (filtered.length === 0) {
-                keySearchDropdown.innerHTML = '<div class="dropdown-item"><strong>No matches found</strong></div>';
+                const hint = selectedDept ? 'No parts found for ' + selectedDept : 'No matches found';
+                keySearchDropdown.innerHTML = '<div class="dropdown-item"><strong>' + hint + '</strong><span>' + (selectedDept ? 'Try a different department or search term' : '') + '</span></div>';
             } else {
                 filtered.forEach(item => {
                     const div = document.createElement('div');
@@ -1235,6 +1248,13 @@
 
         keySearchInput.addEventListener('input', showKeyDropdown);
         keySearchInput.addEventListener('focus', showKeyDropdown);
+
+        // When department changes, clear selected part and refresh dropdown
+        document.getElementById('department').addEventListener('change', () => {
+            clearPart();
+            keySearchInput.value = '';
+            keySearchDropdown.classList.remove('show');
+        });
 
         document.addEventListener('click', (e) => {
             if (!document.querySelector('.search-wrapper').contains(e.target)) {
