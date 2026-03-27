@@ -1207,6 +1207,8 @@
             {key: 734, part: "01-02-682", desc: "Hardware for wheels with clevis and bridge pin", dept: "Aftermarket"},
             {key: 735, part: "01-02-157", desc: "5/16-18 x 1 bolt nut washer", dept: "Aftermarket"},
             {key: 741, part: "01-03-2198", desc: "New Hardware for Caster Pad Complete", dept: "Aftermarket"},
+            {key: 9, part: "01-02-107", desc: "Hitch Bar 90 deg with hardware", dept: "Aftermarket"},
+            {key: 499, part: "208DA", desc: "Hitch - Deere", dept: "Aftermarket"},
             // Engine Line (additional)
             {key: 4, part: "05-02-302", desc: "8.0 Replacement Engine w/Kit", dept: "Engine Line"},
             {key: 6, part: "06-02-301", desc: "Briggs 10 hp w/Hardware", dept: "Engine Line"},
@@ -1540,7 +1542,7 @@
                 const data = await resp.json();
                 if (Array.isArray(data)) {
                     cloudEntries = data.map((row, idx) => {
-                        const rawKey = row.KeyNumber || row['KeyNumber'] || '';
+                        const rawKey = normalizeKeyNumber(row.KeyNumber || row['KeyNumber'] || '');
                         const catalogMatch = PARTS_CATALOG.find(p => String(p.key) === String(rawKey));
                         return {
                             _cloudIndex: idx,
@@ -1566,6 +1568,28 @@
             btn.disabled = false;
             btn.textContent = '\u21BB Sync';
             banner.classList.remove('show');
+        }
+
+        // Normalize Key Number from Google Sheets (Sheets may serialize numbers as dates)
+        function normalizeKeyNumber(val) {
+            if (!val && val !== 0) return '';
+            // If it's already a plain number, return it
+            if (!isNaN(val) && String(val).match(/^\d+$/)) return String(val);
+            // If it looks like an ISO date string (Google Sheets serialized a number as a date),
+            // convert back: Excel epoch is Dec 30, 1899. The serial number = days since then.
+            const s = String(val);
+            if (s.includes('T') || s.includes('1900') || s.includes('1899')) {
+                try {
+                    const d = new Date(s);
+                    if (!isNaN(d.getTime())) {
+                        // Excel epoch: Jan 0, 1900 = Dec 30, 1899 in JS
+                        const excelEpoch = new Date(1899, 11, 30);
+                        const serial = Math.round((d.getTime() - excelEpoch.getTime()) / (24 * 60 * 60 * 1000));
+                        if (serial > 0 && serial < 100000) return String(serial);
+                    }
+                } catch(e) {}
+            }
+            return String(val);
         }
 
         // Normalize date values from Google Sheets (might come as Date objects serialized various ways)
